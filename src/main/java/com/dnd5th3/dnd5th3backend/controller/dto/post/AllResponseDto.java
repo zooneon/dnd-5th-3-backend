@@ -1,11 +1,13 @@
 package com.dnd5th3.dnd5th3backend.controller.dto.post;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-public class AllResponseDto<T> {
+import java.util.List;
 
-    private T posts;
+@Builder
+@Getter
+public class AllResponseDto {
+
+    private List<MainPostDto> posts;
 }

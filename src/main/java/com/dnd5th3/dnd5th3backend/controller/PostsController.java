@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/posts")
 @RestController
 public class PostsController {
 
@@ -31,26 +32,25 @@ public class PostsController {
     private final VoteService voteService;
     private final S3Uploader s3Uploader;
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/api/v1/posts")
-    public IdResponseDto savePost(@RequestPart String title,
+    @PostMapping
+    public ResponseEntity<IdResponseDto> savePost(@RequestPart String title,
                                   @RequestPart String content,
                                   @RequestPart MultipartFile file,
                                   @AuthenticationPrincipal Member member) throws IOException{
         String productImageUrl = s3Uploader.upload(file, "static");
         Posts savedPosts = postsService.savePost(member, title, content, productImageUrl);
+        IdResponseDto responseDto = IdResponseDto.builder().id(savedPosts.getId()).build();
 
-        return IdResponseDto.builder().id(savedPosts.getId()).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @GetMapping("/api/v1/posts/{id}")
-    public PostResponseDto findPostById(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponseDto> findPostById(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
         Posts foundPost = postsService.findPostById(id);
         Vote voteResult = voteService.getVoteResult(member, foundPost);
         VoteType currentMemberVoteResult = voteResult == null ? VoteType.NO_RESULT : voteResult.getResult();
         String productImageUrl = foundPost.getProductImageUrl() == null ? "" : foundPost.getProductImageUrl();
-
-        return PostResponseDto.builder()
+        PostResponseDto responseDto = PostResponseDto.builder()
                 .id(foundPost.getId())
                 .name(foundPost.getMember().getName())
                 .title(foundPost.getTitle())
@@ -63,41 +63,46 @@ public class PostsController {
                 .voteDeadline(foundPost.getVoteDeadline())
                 .currentMemberVoteResult(currentMemberVoteResult)
                 .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @PostMapping("/api/v1/posts/{id}")
-    public IdResponseDto updatePost(@PathVariable(name = "id") Long id,
+    @PostMapping("/{id}")
+    public ResponseEntity<IdResponseDto> updatePost(@PathVariable(name = "id") Long id,
                                     @RequestPart String title,
                                     @RequestPart String content,
                                     @RequestPart MultipartFile file
                                     ) throws IOException {
         String productImageUrl = s3Uploader.upload(file, "static");
         Posts updatedPost = postsService.updatePost(id, title, content, productImageUrl);
-        return IdResponseDto.builder().id(updatedPost.getId()).build();
+        IdResponseDto responseDto = IdResponseDto.builder().id(updatedPost.getId()).build();
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @DeleteMapping("/api/v1/posts/{id}")
-    public IdResponseDto deletePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<IdResponseDto> deletePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
         postsService.deletePost(id, member);
-        return IdResponseDto.builder().id(id).build();
+        IdResponseDto responseDto = IdResponseDto.builder().id(id).build();
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @GetMapping("/api/v1/posts")
+    @GetMapping
     public ResponseEntity<AllPostResponseDto> findAllPosts(@RequestParam(name = "sorted") String sortType) {
         AllPostResponseDto responseDto = postsService.findAllPostsWithSortType(sortType);
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/api/v1/posts/{id}/vote")
-    public IdResponseDto votePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<IdResponseDto> votePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
         Posts posts = postsService.findPostById(id);
         voteService.saveVote(member, posts, requestDto.getResult());
+        IdResponseDto responseDto = IdResponseDto.builder().id(posts.getId()).build();
 
-        return IdResponseDto.builder().id(posts.getId()).build();
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @GetMapping("/api/v1/posts/main")
-    public AllResponseDto mainPosts() {
+    @GetMapping("/main")
+    public ResponseEntity<AllResponseDto> mainPosts() {
         Map<String, Posts> mainPostsMap = postsService.findMainPosts();
         Map<String, MainPostDto> resultMap = new HashMap<>();
         List<MainPostDto> resultList = new ArrayList<>();
@@ -151,8 +156,9 @@ public class PostsController {
         for (MainPostDto value : resultMap.values()) {
             resultList.add(value);
         }
+        AllResponseDto responseDto = AllResponseDto.builder().posts(resultList).build();
 
-        return new AllResponseDto(resultList);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
 }

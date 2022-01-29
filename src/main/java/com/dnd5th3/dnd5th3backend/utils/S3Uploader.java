@@ -20,6 +20,7 @@ import java.util.UUID;
 @Component
 public class S3Uploader {
 
+    public static final String DIR_NAME = "static";
     private final AmazonS3Client amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")

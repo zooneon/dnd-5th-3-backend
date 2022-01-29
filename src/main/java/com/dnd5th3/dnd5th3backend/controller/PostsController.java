@@ -33,14 +33,8 @@ public class PostsController {
     private final S3Uploader s3Uploader;
 
     @PostMapping
-    public ResponseEntity<IdResponseDto> savePost(@RequestPart String title,
-                                  @RequestPart String content,
-                                  @RequestPart MultipartFile file,
-                                  @AuthenticationPrincipal Member member) throws IOException{
-        String productImageUrl = s3Uploader.upload(file, "static");
-        Posts savedPosts = postsService.savePost(member, title, content, productImageUrl);
-        IdResponseDto responseDto = IdResponseDto.builder().id(savedPosts.getId()).build();
-
+    public ResponseEntity<IdResponseDto> savePost(SaveRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
+        IdResponseDto responseDto = postsService.savePost(requestDto, member);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 

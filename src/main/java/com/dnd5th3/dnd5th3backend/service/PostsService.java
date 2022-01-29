@@ -1,18 +1,23 @@
 package com.dnd5th3.dnd5th3backend.service;
 
 import com.dnd5th3.dnd5th3backend.controller.dto.post.AllPostResponseDto;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.IdResponseDto;
 import com.dnd5th3.dnd5th3backend.controller.dto.post.PostsListDto;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.SaveRequestDto;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
 import com.dnd5th3.dnd5th3backend.domain.vote.vo.VoteRatioVo;
 import com.dnd5th3.dnd5th3backend.exception.NoAuthorizationException;
 import com.dnd5th3.dnd5th3backend.repository.posts.PostsRepository;
 import com.dnd5th3.dnd5th3backend.utils.RandomNumber;
+import com.dnd5th3.dnd5th3backend.utils.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,22 +31,12 @@ import java.util.Map;
 public class PostsService {
 
     private final PostsRepository postsRepository;
+    private final S3Uploader s3Uploader;
 
-    public Posts savePost(Member member, String title, String content, String productImageUrl) {
-        Posts newPosts = Posts.builder()
-                .member(member)
-                .title(title)
-                .content(content)
-                .productImageUrl(productImageUrl)
-                .isVoted(false)
-                .isPostsEnd(false)
-                .permitCount(0)
-                .rejectCount(0)
-                .rankCount(0)
-                .voteDeadline(LocalDateTime.now().plusDays(1L))
-                .postsDeadline(LocalDateTime.now().plusDays(7L))
-                .build();
-        return postsRepository.save(newPosts);
+    public IdResponseDto savePost(SaveRequestDto requestDto, Member member) throws IOException {
+        String productImageUrl = s3Uploader.upload(requestDto.getFile(), S3Uploader.DIR_NAME);
+        Posts savedPost = postsRepository.save(requestDto.toEntity(member, productImageUrl));
+        return IdResponseDto.builder().id(savedPost.getId()).build();
     }
 
     public Posts findPostById(Long id) {

@@ -1,11 +1,13 @@
 package com.dnd5th3.dnd5th3backend.domain.vote.vo;
 
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Objects;
 
 @Getter
+@EqualsAndHashCode
 public class VoteRatioVo {
 
     private final Long permitRatio;
@@ -19,18 +21,5 @@ public class VoteRatioVo {
 
         this.permitRatio = permitRatio;
         this.rejectRatio = rejectRatio;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VoteRatioVo voteRatioVo = (VoteRatioVo) o;
-        return Objects.equals(permitRatio, voteRatioVo.permitRatio) && Objects.equals(rejectRatio, voteRatioVo.rejectRatio);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(permitRatio, rejectRatio);
     }
 }

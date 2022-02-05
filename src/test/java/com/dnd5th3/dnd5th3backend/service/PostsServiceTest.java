@@ -1,11 +1,14 @@
 package com.dnd5th3.dnd5th3backend.service;
 
 import com.dnd5th3.dnd5th3backend.controller.dto.post.AllPostResponseDto;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.IdResponseDto;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.SaveRequestDto;
 import com.dnd5th3.dnd5th3backend.controller.dto.post.SortType;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.member.Role;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
 import com.dnd5th3.dnd5th3backend.repository.posts.PostsRepository;
+import com.dnd5th3.dnd5th3backend.utils.S3Uploader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +36,9 @@ class PostsServiceTest {
 
     @Mock
     private PostsRepository postsRepository;
+
+    @Mock
+    private S3Uploader s3Uploader;
 
     @InjectMocks
     private PostsService postsService;
@@ -59,14 +69,16 @@ class PostsServiceTest {
     @Test
     void savePostTest() throws Exception{
         //given
-        when(postsRepository.save(any(Posts.class))).thenReturn(post);
+        MockMultipartFile file = new MockMultipartFile("test file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
+        SaveRequestDto saveRequestDto = new SaveRequestDto("test", "test content", file);
+        given(s3Uploader.upload(file, "static")).willReturn("test.jpg");
+        given(postsRepository.save(any(Posts.class))).willReturn(post);
 
         //when
-        Posts savedPosts = postsService.savePost(post.getMember(), post.getTitle(), post.getContent(), post.getProductImageUrl());
+        IdResponseDto responseDto = postsService.savePost(saveRequestDto, member);
 
         //then
-        assertEquals(savedPosts.getId(), post.getId());
-        assertEquals(savedPosts.getMember().getId(), post.getMember().getId());
+        assertEquals(responseDto.getId(), post.getId());
     }
 
     @DisplayName("post 상세조회 테스트")

@@ -97,23 +97,14 @@ class PostsControllerTest {
     @Test
     void savePostApiTest() throws Exception {
         //given
-        String title = "test";
-        String content = "content";
-        String productImageUrl = "test.jpg";
-        MockMultipartFile image = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes());
-        Posts response = Posts.builder()
-                .id(1L)
-                .member(member)
-                .title("test")
-                .content("content")
-                .productImageUrl("test.jpg")
-                .build();
-        given(s3Uploader.upload(image, "static")).willReturn(productImageUrl);
-        given(postsService.savePost(member, title, content, productImageUrl)).willReturn(response);
+        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
+        SaveRequestDto requestDto = new SaveRequestDto("test", "content", file);
+        IdResponseDto responseDto = IdResponseDto.builder().id(1L).build();
+        given(postsService.savePost(requestDto, member)).willReturn(responseDto);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.fileUpload("/api/v1/posts")
-                .file(image)
+                .file(file)
                 .part(new MockPart("title", "test".getBytes(StandardCharsets.UTF_8)))
                 .part(new MockPart("content", "content".getBytes(StandardCharsets.UTF_8)))
                 .principal(new UsernamePasswordAuthenticationToken(member, null))
@@ -135,12 +126,8 @@ class PostsControllerTest {
                                 partWithName("title").description("글 제목"),
                                 partWithName("content").description("글 내용"),
                                 partWithName("file").description("상품 이미지")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("생성된 게시글 id").type(Long.class)
                         )
-                ))
-                .andExpect(jsonPath("$.id").value(1L));
+                ));
     }
 
     @DisplayName("post 상세조회 api 테스트")

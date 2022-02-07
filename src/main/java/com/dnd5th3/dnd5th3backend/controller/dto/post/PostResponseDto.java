@@ -20,5 +20,5 @@ public class PostResponseDto {
     private Integer rejectCount;
     private LocalDateTime createdDate;
     private LocalDateTime voteDeadline;
-    private VoteType currentMemberVoteResult;
+    private VoteType currentMemberVoteType;
 }

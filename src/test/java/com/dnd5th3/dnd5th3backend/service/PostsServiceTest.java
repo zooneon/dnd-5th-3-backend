@@ -1,13 +1,12 @@
 package com.dnd5th3.dnd5th3backend.service;
 
-import com.dnd5th3.dnd5th3backend.controller.dto.post.AllPostResponseDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.IdResponseDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.SaveRequestDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.SortType;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.*;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.member.Role;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
+import com.dnd5th3.dnd5th3backend.domain.vote.VoteType;
 import com.dnd5th3.dnd5th3backend.repository.posts.PostsRepository;
+import com.dnd5th3.dnd5th3backend.repository.vote.VoteRepository;
 import com.dnd5th3.dnd5th3backend.utils.S3Uploader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +35,8 @@ class PostsServiceTest {
 
     @Mock
     private PostsRepository postsRepository;
+    @Mock
+    private VoteService voteService;
 
     @Mock
     private S3Uploader s3Uploader;
@@ -45,9 +46,11 @@ class PostsServiceTest {
 
     private Member member;
     private Posts post;
+    private LocalDateTime testDate;
 
     @BeforeEach
     void setUp() {
+        testDate = LocalDateTime.of(2022, 2, 7, 12, 0, 0);
         member = Member.builder().email("test@gmail.com").password("1234").role(Role.ROLE_USER).name("닉네임").build();
         post = Posts.builder()
                 .id(1L)
@@ -60,8 +63,8 @@ class PostsServiceTest {
                 .permitCount(0)
                 .rejectCount(0)
                 .rankCount(0)
-                .voteDeadline(LocalDateTime.now().plusDays(1L))
-                .postsDeadline(LocalDateTime.now().plusDays(7L))
+                .voteDeadline(testDate.plusDays(1L))
+                .postsDeadline(testDate.plusDays(7L))
                 .build();
     }
 
@@ -83,37 +86,20 @@ class PostsServiceTest {
 
     @DisplayName("post 상세조회 테스트")
     @Test
-    void findPostByIdTest() throws Exception{
+    void getPostTest() {
         //given
-        when(postsRepository.findPostsById(1L)).thenReturn(post);
+        given(postsRepository.findPostsById(1L)).willReturn(post);
+        given(voteService.getVoteType(member, post)).willReturn(VoteType.NO_RESULT);
 
         //when
-        Posts foundPost = postsService.findPostById(1L);
+        PostResponseDto responseDto = postsService.getPost(1L, member);
 
         //then
-        assertEquals(post.getMember().getName(), foundPost.getMember().getName());
-        assertEquals(post.getTitle(), foundPost.getTitle());
+        assertEquals(responseDto.getId(), post.getId());
+        assertEquals(responseDto.getTitle(), post.getTitle());
         assertEquals(post.getRankCount(), 1);
         assertEquals(false, post.getIsVoted());
         assertEquals(false, post.getIsPostsEnd());
-    }
-
-    @DisplayName("투표 종료 여부, 메인페이지 게시 조건 종료 여부 검사 테스트")
-    @Test
-    void updateVoteStatusAndPostStatus() throws Exception {
-        //given
-        Posts voteEnd = Posts.builder().rankCount(0).isVoted(false).voteDeadline(LocalDateTime.now().minusDays(1L)).build();
-        Posts postEnd = Posts.builder().rankCount(0).isPostsEnd(false).postsDeadline(LocalDateTime.now().minusDays(1L)).build();
-        given(postsRepository.findPostsById(2L)).willReturn(voteEnd);
-        given(postsRepository.findPostsById(3L)).willReturn(postEnd);
-
-        //when
-        Posts voteEndPost = postsService.findPostById(2L);
-        Posts postEndPost = postsService.findPostById(3L);
-
-        //then
-        assertEquals(true, voteEndPost.getIsVoted());
-        assertEquals(true, postEndPost.getIsPostsEnd());
     }
 
     @DisplayName("post 수정 테스트")

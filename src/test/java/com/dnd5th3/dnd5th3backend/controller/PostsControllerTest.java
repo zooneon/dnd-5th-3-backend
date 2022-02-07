@@ -79,6 +79,7 @@ class PostsControllerTest {
     private ObjectMapper objectMapper;
 
     private Member member;
+    private LocalDateTime testDate;
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
@@ -91,6 +92,7 @@ class PostsControllerTest {
                 .role(Role.ROLE_USER)
                 .name("name")
                 .build();
+        testDate = LocalDateTime.of(2022, 2, 7, 12, 0, 0);
     }
 
     @DisplayName("post 생성 api 테스트")
@@ -115,44 +117,20 @@ class PostsControllerTest {
         //then
         result
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andDo(document("posts/save",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        requestHeaders(
-                                headerWithName("Authorization").description("현재 사용자 토큰")
-                        ),
-                        requestParts(
-                                partWithName("title").description("글 제목"),
-                                partWithName("content").description("글 내용"),
-                                partWithName("file").description("상품 이미지")
-                        )
-                ));
+                .andExpect(status().isCreated());
     }
 
     @DisplayName("post 상세조회 api 테스트")
     @Test
-     void findPostByIdApiTest() throws Exception {
+     void getPostApiTest() throws Exception {
         //given
-        Posts post = Posts.builder()
-                .id(1L)
-                .member(member)
-                .title("test")
-                .content("content")
-                .productImageUrl("test.jpg")
-                .isVoted(false)
-                .isPostsEnd(false)
-                .permitCount(2)
-                .rejectCount(8)
-                .rankCount(100)
-                .voteDeadline(LocalDateTime.of(2021, 8, 2, 12, 0, 0))
-                .postsDeadline(LocalDateTime.of(2021, 8, 9, 12, 0, 0))
-                .build();
-        post.setCreatedDate(LocalDateTime.of(2021, 8, 1, 12, 0, 0));
-        Vote vote = Vote.builder().id(1L).member(member).posts(post).result(VoteType.NO_RESULT).build();
-
-        given(postsService.findPostById(1L)).willReturn(post);
-        given(voteService.getVoteResult(member, post)).willReturn(vote);
+        PostResponseDto responseDto = PostResponseDto.builder()
+                .id(1L).name("name").title("test")
+                .content("test content").productImageUrl("test.jpg")
+                .isVoted(false).permitCount(0).rejectCount(0)
+                .createdDate(testDate).voteDeadline(testDate.plusDays(1L))
+                .currentMemberVoteType(VoteType.NO_RESULT).build();
+        given(postsService.getPost(1L, member)).willReturn(responseDto);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/{id}", 1L));
@@ -160,37 +138,7 @@ class PostsControllerTest {
         //then
         result
                 .andDo(print())
-                .andDo(document("posts/getById",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        pathParameters(
-                                parameterWithName("id").description("게시글 id")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("게시글 id"),
-                                fieldWithPath("name").description("작성자 이름"),
-                                fieldWithPath("title").description("글 제목"),
-                                fieldWithPath("content").description("글 내용"),
-                                fieldWithPath("productImageUrl").description("상품 이미지"),
-                                fieldWithPath("isVoted").description("투표 종료 여부"),
-                                fieldWithPath("permitCount").description("찬성 투표 수"),
-                                fieldWithPath("rejectCount").description("반대 투표 수"),
-                                fieldWithPath("createdDate").description("작성된 시간"),
-                                fieldWithPath("voteDeadline").description("투표 종료 시간"),
-                                fieldWithPath("currentMemberVoteResult").description("현재 사용자의 투표 결과")
-                        )
-                ))
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("name"))
-                .andExpect(jsonPath("$.title").value("test"))
-                .andExpect(jsonPath("$.content").value("content"))
-                .andExpect(jsonPath("$.productImageUrl").value("test.jpg"))
-                .andExpect(jsonPath("$.isVoted").value(false))
-                .andExpect(jsonPath("$.permitCount").value(2))
-                .andExpect(jsonPath("$.rejectCount").value(8))
-                .andExpect(jsonPath("$.createdDate").value("2021-08-01T12:00:00"))
-                .andExpect(jsonPath("$.voteDeadline").value("2021-08-02T12:00:00"))
-                .andExpect(jsonPath("$.currentMemberVoteResult").value("NO_RESULT"));
+                .andExpect(status().isOk());
     }
 
     @DisplayName("post 수정 api 테스트")
@@ -405,7 +353,7 @@ class PostsControllerTest {
                 .posts(posts)
                 .result(VoteType.PERMIT)
                 .build();
-        given(postsService.findPostById(1L)).willReturn(posts);
+//        given(postsService.findPostById(1L)).willReturn(posts);
         given(voteService.saveVote(member, posts, requestDto.getResult())).willReturn(response);
 
         //when

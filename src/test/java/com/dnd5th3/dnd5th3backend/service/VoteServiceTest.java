@@ -19,7 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,28 +74,28 @@ class VoteServiceTest {
     @Test
     void saveVoteTest() throws Exception {
         //given
-        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
-        when(voteRepository.save(any(Vote.class))).thenReturn(vote);
+        given(postsRepository.findById(1L)).willReturn(Optional.of(posts));
+        given(voteRepository.save(any(Vote.class))).willReturn(vote);
 
         //when
         Vote savedVote = voteService.saveVote(member, posts, VoteType.NO_RESULT);
 
         //then
-        Assertions.assertEquals(savedVote.getId(), vote.getId());
-        Assertions.assertEquals(savedVote.getMember(), vote.getMember());
-        Assertions.assertEquals(savedVote.getPosts(), vote.getPosts());
+        assertEquals(savedVote.getId(), vote.getId());
+        assertEquals(savedVote.getMember(), vote.getMember());
+        assertEquals(savedVote.getPosts(), vote.getPosts());
     }
 
     @DisplayName("투표 결과 조회 테스트")
     @Test
     void getVoteResultTest() throws Exception {
         //given
-        when(voteRepository.findByMemberAndPosts(member, posts)).thenReturn(vote);
+        given(voteRepository.findByMemberAndPosts(member, posts)).willReturn(vote);
 
         //when
-        Vote voteResult = voteService.getVoteResult(member, posts);
+        VoteType voteType = voteService.getVoteType(member, posts);
 
         //then
-        Assertions.assertEquals(voteResult.getResult(), vote.getResult());
+        assertEquals(voteType, vote.getResult());
     }
 }

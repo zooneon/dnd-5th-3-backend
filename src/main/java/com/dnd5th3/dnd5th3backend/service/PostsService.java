@@ -1,11 +1,10 @@
 package com.dnd5th3.dnd5th3backend.service;
 
-import com.dnd5th3.dnd5th3backend.controller.dto.post.AllPostResponseDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.IdResponseDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.PostsListDto;
-import com.dnd5th3.dnd5th3backend.controller.dto.post.SaveRequestDto;
+import com.dnd5th3.dnd5th3backend.controller.dto.post.*;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
+import com.dnd5th3.dnd5th3backend.domain.vote.Vote;
+import com.dnd5th3.dnd5th3backend.domain.vote.VoteType;
 import com.dnd5th3.dnd5th3backend.domain.vote.vo.VoteRatioVo;
 import com.dnd5th3.dnd5th3backend.exception.NoAuthorizationException;
 import com.dnd5th3.dnd5th3backend.repository.posts.PostsRepository;
@@ -30,6 +29,7 @@ import java.util.Map;
 @Service
 public class PostsService {
 
+    private final VoteService voteService;
     private final PostsRepository postsRepository;
     private final S3Uploader s3Uploader;
 
@@ -39,12 +39,25 @@ public class PostsService {
         return IdResponseDto.builder().id(savedPost.getId()).build();
     }
 
-    public Posts findPostById(Long id) {
+    public PostResponseDto getPost(Long id, Member member) {
         Posts foundPost = postsRepository.findPostsById(id);
         foundPost.updateVoteStatusAndPostStatus();
         foundPost.increaseRankCount();
+        VoteType currentMemberVoteType = voteService.getVoteType(member, foundPost);
 
-        return foundPost;
+        return PostResponseDto.builder()
+                .id(foundPost.getId())
+                .name(foundPost.getMember().getName())
+                .title(foundPost.getTitle())
+                .content(foundPost.getContent())
+                .productImageUrl(foundPost.getProductImageUrl())
+                .isVoted(foundPost.getIsVoted())
+                .permitCount(foundPost.getPermitCount())
+                .rejectCount(foundPost.getRejectCount())
+                .createdDate(foundPost.getCreatedDate())
+                .voteDeadline(foundPost.getVoteDeadline())
+                .currentMemberVoteType(currentMemberVoteType)
+                .build();
     }
 
     public Posts updatePost(Long id, String title, String content, String productImageUrl) {

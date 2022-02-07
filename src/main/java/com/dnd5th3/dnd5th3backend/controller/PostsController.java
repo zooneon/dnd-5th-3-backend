@@ -39,25 +39,8 @@ public class PostsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> findPostById(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
-        Posts foundPost = postsService.findPostById(id);
-        Vote voteResult = voteService.getVoteResult(member, foundPost);
-        VoteType currentMemberVoteResult = voteResult == null ? VoteType.NO_RESULT : voteResult.getResult();
-        String productImageUrl = foundPost.getProductImageUrl() == null ? "" : foundPost.getProductImageUrl();
-        PostResponseDto responseDto = PostResponseDto.builder()
-                .id(foundPost.getId())
-                .name(foundPost.getMember().getName())
-                .title(foundPost.getTitle())
-                .content(foundPost.getContent())
-                .productImageUrl(productImageUrl)
-                .isVoted(foundPost.getIsVoted())
-                .permitCount(foundPost.getPermitCount())
-                .rejectCount(foundPost.getRejectCount())
-                .createdDate(foundPost.getCreatedDate())
-                .voteDeadline(foundPost.getVoteDeadline())
-                .currentMemberVoteResult(currentMemberVoteResult)
-                .build();
-
+    public ResponseEntity<PostResponseDto> getPost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
+        PostResponseDto responseDto = postsService.getPost(id, member);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
@@ -86,14 +69,14 @@ public class PostsController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/{id}/vote")
-    public ResponseEntity<IdResponseDto> votePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
-        Posts posts = postsService.findPostById(id);
-        voteService.saveVote(member, posts, requestDto.getResult());
-        IdResponseDto responseDto = IdResponseDto.builder().id(posts.getId()).build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
-    }
+//    @PostMapping("/{id}/vote")
+//    public ResponseEntity<IdResponseDto> votePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
+//        Posts posts = postsService.findPostById(id);
+//        voteService.saveVote(member, posts, requestDto.getResult());
+//        IdResponseDto responseDto = IdResponseDto.builder().id(posts.getId()).build();
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+//    }
 
     @GetMapping("/main")
     public ResponseEntity<AllResponseDto> mainPosts() {

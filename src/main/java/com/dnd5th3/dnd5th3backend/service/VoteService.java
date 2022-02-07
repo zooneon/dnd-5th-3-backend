@@ -39,8 +39,8 @@ public class VoteService {
         return voteRepository.save(newVote);
     }
 
-    public Vote getVoteResult(Member member, Posts posts) {
-
-        return voteRepository.findByMemberAndPosts(member, posts);
+    public VoteType getVoteType(Member member, Posts posts) {
+        Vote voteResult = voteRepository.findByMemberAndPosts(member, posts);
+        return voteResult == null ? VoteType.NO_RESULT : voteResult.getResult();
     }
 }

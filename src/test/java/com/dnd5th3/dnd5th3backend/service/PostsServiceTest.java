@@ -103,18 +103,16 @@ class PostsServiceTest {
     @Test
     void updatePostTest() throws Exception {
         //given
-        String title = "update";
-        String content = "update content";
-        String productImageUrl = "update.jpg";
-        when(postsRepository.findPostsById(1L)).thenReturn(post);
+        MockMultipartFile file = new MockMultipartFile("test file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
+        PostRequestDto requestDto = new PostRequestDto("test", "test content", file);
+        given(s3Uploader.upload(file, "static")).willReturn("test.jpg");
+        given(postsRepository.findPostsById(1L)).willReturn(post);
 
         //when
-        Posts updatedPost = postsService.updatePost(post.getId(), title, content, productImageUrl);
+        IdResponseDto responseDto = postsService.updatePost(post.getId(), requestDto, member);
 
         //then
-        assertEquals(updatedPost.getTitle(), title);
-        assertEquals(updatedPost.getContent(), content);
-        assertEquals(updatedPost.getProductImageUrl(), productImageUrl);
+        assertEquals(responseDto.getId(), post.getId());
     }
 
     @DisplayName("post 삭제 테스트")

@@ -11,6 +11,7 @@ import com.dnd5th3.dnd5th3backend.service.PostsService;
 import com.dnd5th3.dnd5th3backend.service.VoteService;
 import com.dnd5th3.dnd5th3backend.utils.S3Uploader;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -100,7 +101,7 @@ class PostsControllerTest {
     void savePostApiTest() throws Exception {
         //given
         MockMultipartFile file = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
-        SaveRequestDto requestDto = new SaveRequestDto("test", "content", file);
+        PostRequestDto requestDto = new PostRequestDto("test", "content", file);
         IdResponseDto responseDto = IdResponseDto.builder().id(1L).build();
         given(postsService.savePost(requestDto, member)).willReturn(responseDto);
 
@@ -133,68 +134,71 @@ class PostsControllerTest {
         given(postsService.getPost(1L, member)).willReturn(responseDto);
 
         //when
-        ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/{id}", 1L));
+        ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/{id}", 1L)
+                .principal(new UsernamePasswordAuthenticationToken(member,null))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding(Charsets.UTF_8.toString()));
 
         //then
         result
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andDo(document("posts/getById",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(
+                                parameterWithName("id").description("게시글 id")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("게시글 id"),
+                                fieldWithPath("name").description("작성자 이름"),
+                                fieldWithPath("title").description("글 제목"),
+                                fieldWithPath("content").description("글 내용"),
+                                fieldWithPath("productImageUrl").description("상품 이미지"),
+                                fieldWithPath("isVoted").description("투표 종료 여부"),
+                                fieldWithPath("permitCount").description("찬성 투표 수"),
+                                fieldWithPath("rejectCount").description("반대 투표 수"),
+                                fieldWithPath("createdDate").description("작성된 시간"),
+                                fieldWithPath("voteDeadline").description("투표 종료 시간"),
+                                fieldWithPath("currentMemberVoteType").description("현재 사용자의 투표 결과")
+                        )
+                ))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("name"))
+                .andExpect(jsonPath("$.title").value("test"))
+                .andExpect(jsonPath("$.content").value("test content"))
+                .andExpect(jsonPath("$.productImageUrl").value("test.jpg"))
+                .andExpect(jsonPath("$.isVoted").value(false))
+                .andExpect(jsonPath("$.permitCount").value(0))
+                .andExpect(jsonPath("$.rejectCount").value(0))
+                .andExpect(jsonPath("$.createdDate").value("2022-02-07T12:00:00"))
+                .andExpect(jsonPath("$.voteDeadline").value("2022-02-08T12:00:00"))
+                .andExpect(jsonPath("$.currentMemberVoteType").value("NO_RESULT"));
     }
 
     @DisplayName("post 수정 api 테스트")
     @Test
     void updatePostApiTest() throws Exception {
         //given
-        Posts response = Posts.builder()
-                .id(1L)
-                .member(member)
-                .title("update")
-                .content("update content")
-                .productImageUrl("update.jpg")
-                .isVoted(false)
-                .isPostsEnd(false)
-                .permitCount(36)
-                .rejectCount(25)
-                .rankCount(70)
-                .voteDeadline(LocalDateTime.of(2021, 8, 3, 12, 0, 0))
-                .postsDeadline(LocalDateTime.of(2021, 8, 10, 12, 0, 0))
-                .build();
-        response.setCreatedDate(LocalDateTime.of(2021, 8, 2, 12, 0, 0));
-        String title = "update";
-        String content = "update content";
-        String productImageUrl = "update.jpg";
-        MockMultipartFile image = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes());
-
-        given(s3Uploader.upload(image, "static")).willReturn(productImageUrl);
-        given(postsService.updatePost(1L, title, content, productImageUrl)).willReturn(response);
+        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
+        PostRequestDto requestDto = new PostRequestDto("test", "content", file);
+        IdResponseDto responseDto = IdResponseDto.builder().id(1L).build();
+        given(postsService.updatePost(1L, requestDto, member)).willReturn(responseDto);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.fileUpload("/api/v1/posts/{id}", 1L)
-                .file(image)
+                .file(file)
                 .part(new MockPart("title", "update".getBytes(StandardCharsets.UTF_8)))
                 .part(new MockPart("content", "update content".getBytes(StandardCharsets.UTF_8)))
+                .principal(new UsernamePasswordAuthenticationToken(member, null))
                 .contentType(MediaType.MULTIPART_MIXED)
         );
 
         //then
         result
                 .andDo(print())
-                .andDo(document("posts/update",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        pathParameters(
-                                parameterWithName("id").description("게시글 id")
-                        ),
-                        requestParts(
-                                partWithName("title").description("수정할 제목"),
-                                partWithName("content").description("수정할 내용"),
-                                partWithName("file").description("수정할 상품 이미지")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("수정한 게시글 id").type(Long.class)
-                        )
-                ))
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk());
     }
 
     @DisplayName("post 삭제 api 테스트")

@@ -3,7 +3,6 @@ package com.dnd5th3.dnd5th3backend.service;
 import com.dnd5th3.dnd5th3backend.controller.dto.post.*;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
-import com.dnd5th3.dnd5th3backend.domain.vote.Vote;
 import com.dnd5th3.dnd5th3backend.domain.vote.VoteType;
 import com.dnd5th3.dnd5th3backend.domain.vote.vo.VoteRatioVo;
 import com.dnd5th3.dnd5th3backend.exception.NoAuthorizationException;
@@ -14,10 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +30,7 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final S3Uploader s3Uploader;
 
-    public IdResponseDto savePost(SaveRequestDto requestDto, Member member) throws IOException {
+    public IdResponseDto savePost(PostRequestDto requestDto, Member member) throws IOException {
         String productImageUrl = s3Uploader.upload(requestDto.getFile(), S3Uploader.DIR_NAME);
         Posts savedPost = postsRepository.save(requestDto.toEntity(member, productImageUrl));
         return IdResponseDto.builder().id(savedPost.getId()).build();

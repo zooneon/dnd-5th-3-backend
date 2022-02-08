@@ -3,8 +3,6 @@ package com.dnd5th3.dnd5th3backend.controller;
 import com.dnd5th3.dnd5th3backend.controller.dto.post.*;
 import com.dnd5th3.dnd5th3backend.domain.member.Member;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
-import com.dnd5th3.dnd5th3backend.domain.vote.Vote;
-import com.dnd5th3.dnd5th3backend.domain.vote.VoteType;
 import com.dnd5th3.dnd5th3backend.domain.vote.vo.VoteRatioVo;
 import com.dnd5th3.dnd5th3backend.service.PostsService;
 import com.dnd5th3.dnd5th3backend.service.VoteService;
@@ -33,7 +31,7 @@ public class PostsController {
     private final S3Uploader s3Uploader;
 
     @PostMapping
-    public ResponseEntity<IdResponseDto> savePost(SaveRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
+    public ResponseEntity<IdResponseDto> savePost(PostRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
         IdResponseDto responseDto = postsService.savePost(requestDto, member);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

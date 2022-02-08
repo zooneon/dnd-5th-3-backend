@@ -6,7 +6,6 @@ import com.dnd5th3.dnd5th3backend.domain.member.Role;
 import com.dnd5th3.dnd5th3backend.domain.posts.Posts;
 import com.dnd5th3.dnd5th3backend.domain.vote.VoteType;
 import com.dnd5th3.dnd5th3backend.repository.posts.PostsRepository;
-import com.dnd5th3.dnd5th3backend.repository.vote.VoteRepository;
 import com.dnd5th3.dnd5th3backend.utils.S3Uploader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,13 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,12 +70,12 @@ class PostsServiceTest {
     void savePostTest() throws Exception{
         //given
         MockMultipartFile file = new MockMultipartFile("test file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
-        SaveRequestDto saveRequestDto = new SaveRequestDto("test", "test content", file);
+        PostRequestDto postRequestDto = new PostRequestDto("test", "test content", file);
         given(s3Uploader.upload(file, "static")).willReturn("test.jpg");
         given(postsRepository.save(any(Posts.class))).willReturn(post);
 
         //when
-        IdResponseDto responseDto = postsService.savePost(saveRequestDto, member);
+        IdResponseDto responseDto = postsService.savePost(postRequestDto, member);
 
         //then
         assertEquals(responseDto.getId(), post.getId());

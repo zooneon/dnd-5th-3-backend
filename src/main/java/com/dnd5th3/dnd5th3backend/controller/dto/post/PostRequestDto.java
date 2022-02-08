@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class SaveRequestDto {
+public class PostRequestDto {
 
     private String title;
     private String content;

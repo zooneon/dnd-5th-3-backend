@@ -57,11 +57,15 @@ public class PostsService {
                 .build();
     }
 
-    public Posts updatePost(Long id, String title, String content, String productImageUrl) {
+    public IdResponseDto updatePost(Long id, PostRequestDto requestDto, Member member) throws IOException {
         Posts foundPost = postsRepository.findPostsById(id);
-        foundPost.update(title, content, productImageUrl);
+        if (foundPost.getMember().getId() != member.getId()) {
+            throw new NoAuthorizationException("수정 권한 없음");
+        }
+        String productImageUrl = s3Uploader.upload(requestDto.getFile(), S3Uploader.DIR_NAME);
+        foundPost.update(requestDto.getTitle(), requestDto.getContent(), productImageUrl);
 
-        return foundPost;
+        return IdResponseDto.builder().id(foundPost.getId()).build();
     }
 
     public void deletePost(Long id, Member member) {

@@ -44,13 +44,10 @@ public class PostsController {
 
     @PostMapping("/{id}")
     public ResponseEntity<IdResponseDto> updatePost(@PathVariable(name = "id") Long id,
-                                    @RequestPart String title,
-                                    @RequestPart String content,
-                                    @RequestPart MultipartFile file
-                                    ) throws IOException {
-        String productImageUrl = s3Uploader.upload(file, "static");
-        Posts updatedPost = postsService.updatePost(id, title, content, productImageUrl);
-        IdResponseDto responseDto = IdResponseDto.builder().id(updatedPost.getId()).build();
+                                                    PostRequestDto requestDto,
+                                                    @AuthenticationPrincipal Member member
+                                        ) throws IOException {
+        IdResponseDto responseDto = postsService.updatePost(id, requestDto, member);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 

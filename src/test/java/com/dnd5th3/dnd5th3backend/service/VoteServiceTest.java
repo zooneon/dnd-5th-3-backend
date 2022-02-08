@@ -70,9 +70,9 @@ class VoteServiceTest {
                 .build();
     }
 
-    @DisplayName("vote 저장 테스트")
+    @DisplayName("투표 생성 테스트")
     @Test
-    void saveVoteTest() throws Exception {
+    void saveVote() {
         //given
         given(postsRepository.findById(1L)).willReturn(Optional.of(posts));
         given(voteRepository.save(any(Vote.class))).willReturn(vote);
@@ -88,7 +88,7 @@ class VoteServiceTest {
 
     @DisplayName("투표 결과 조회 테스트")
     @Test
-    void getVoteResultTest() throws Exception {
+    void getVoteType() {
         //given
         given(voteRepository.findByMemberAndPosts(member, posts)).willReturn(vote);
 

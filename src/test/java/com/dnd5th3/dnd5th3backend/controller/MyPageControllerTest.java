@@ -89,9 +89,9 @@ class MyPageControllerTest {
         postsList.add(posts);
     }
 
-    @DisplayName("사용자의 이름, 이메일, 정렬된 게시글 목록을 반환한다.")
+    @DisplayName("마이페이지 정보 조회 API 테스트")
     @Test
-    void getInfoApiTest() throws Exception {
+    void getMemberInfoAPI() throws Exception {
         //given
         PostsListDto postsListDto = PostsListDto.builder().id(posts.getId()).name(posts.getMember().getName())
                 .title(posts.getTitle()).productImageUrl(posts.getProductImageUrl())
@@ -104,7 +104,7 @@ class MyPageControllerTest {
 
         InfoResponseDto responseDto = InfoResponseDto.builder()
                 .name(member.getName()).email(member.getEmail()).postsList(postsList).build();
-        given(myPageService.findMemberInfoWithSortType(member, SortType.WRITTEN.getValue())).willReturn(responseDto);
+        given(myPageService.getMemberInfoWithSortType(member, SortType.WRITTEN.getValue())).willReturn(responseDto);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/mypage?sorted=written")

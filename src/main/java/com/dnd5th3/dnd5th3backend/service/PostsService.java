@@ -36,7 +36,7 @@ public class PostsService {
         return IdResponseDto.builder().id(savedPost.getId()).build();
     }
 
-    public PostResponseDto getPost(Long id, Member member) {
+    public PostResponseDto getDetailPost(Long id, Member member) {
         Posts foundPost = postsRepository.findPostsById(id);
         foundPost.updateVoteStatusAndPostStatus();
         foundPost.increaseRankCount();
@@ -78,14 +78,14 @@ public class PostsService {
         return IdResponseDto.builder().id(foundPost.getId()).build();
     }
 
-    public AllPostResponseDto findAllPostsWithSortType(String sortType) {
+    public AllPostResponseDto getPostListWithSortType(String sortType) {
         List<Posts> postsList = postsRepository.findPostsWithSortType(sortType);
         postsList.forEach(post -> post.updateVoteStatusAndPostStatus());
         List<PostsListDto> listDtos = PostsListDto.makePostsToListDtos(postsList);
         return AllPostResponseDto.builder().listDtos(listDtos).build();
     }
 
-    public Map<String, Posts> findMainPosts() {
+    public Map<String, Posts> getMainPosts() {
         Map<String, Posts> resultMap = new HashMap<>();
         //상위 50개 컨텐츠 추출
         List<Posts> top50RankedList = postsRepository.findPostsTop50Ranked();

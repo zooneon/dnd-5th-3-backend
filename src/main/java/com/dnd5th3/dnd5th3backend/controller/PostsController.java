@@ -29,19 +29,19 @@ public class PostsController {
     private final PostsService postsService;
 
     @PostMapping
-    public ResponseEntity<IdResponseDto> savePost(PostRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
+    public ResponseEntity<IdResponseDto> saveAPI(PostRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
         IdResponseDto responseDto = postsService.savePost(requestDto, member);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> getPost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
-        PostResponseDto responseDto = postsService.getPost(id, member);
+    public ResponseEntity<PostResponseDto> getDetailAPI(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
+        PostResponseDto responseDto = postsService.getDetailPost(id, member);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<IdResponseDto> updatePost(@PathVariable(name = "id") Long id,
+    public ResponseEntity<IdResponseDto> updateAPI(@PathVariable(name = "id") Long id,
                                                     PostRequestDto requestDto,
                                                     @AuthenticationPrincipal Member member
                                         ) throws IOException {
@@ -50,19 +50,19 @@ public class PostsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<IdResponseDto> deletePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
+    public ResponseEntity<IdResponseDto> deleteAPI(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
         IdResponseDto responseDto = postsService.deletePost(id, member);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping
-    public ResponseEntity<AllPostResponseDto> findAllPosts(@RequestParam(name = "sorted") String sortType) {
-        AllPostResponseDto responseDto = postsService.findAllPostsWithSortType(sortType);
+    public ResponseEntity<AllPostResponseDto> getListAPI(@RequestParam(name = "sorted") String sortType) {
+        AllPostResponseDto responseDto = postsService.getPostListWithSortType(sortType);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
 //    @PostMapping("/{id}/vote")
-//    public ResponseEntity<IdResponseDto> votePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
+//    public ResponseEntity<IdResponseDto> saveVoteAPI(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
 //        Posts posts = postsService.findPostById(id);
 //        voteService.saveVote(member, posts, requestDto.getResult());
 //        IdResponseDto responseDto = IdResponseDto.builder().id(posts.getId()).build();
@@ -71,8 +71,8 @@ public class PostsController {
 //    }
 
     @GetMapping("/main")
-    public ResponseEntity<AllResponseDto> mainPosts() {
-        Map<String, Posts> mainPostsMap = postsService.findMainPosts();
+    public ResponseEntity<AllResponseDto> getMainPostsAPI() {
+        Map<String, Posts> mainPostsMap = postsService.getMainPosts();
         Map<String, MainPostDto> resultMap = new HashMap<>();
         List<MainPostDto> resultList = new ArrayList<>();
         mainPostsMap.forEach((key, value) -> {

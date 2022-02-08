@@ -24,8 +24,8 @@ public class MyPageController {
     private final MyPageService myPageService;
 
     @GetMapping("/api/v1/mypage")
-    public ResponseEntity<InfoResponseDto> findMemberInfo(@AuthenticationPrincipal Member member, @RequestParam String sorted) {
-        InfoResponseDto infoResponseDto = myPageService.findMemberInfoWithSortType(member, sorted);
+    public ResponseEntity<InfoResponseDto> getMemberInfoAPI(@AuthenticationPrincipal Member member, @RequestParam String sorted) {
+        InfoResponseDto infoResponseDto = myPageService.getMemberInfoWithSortType(member, sorted);
         return ResponseEntity.ok(infoResponseDto);
     }
 

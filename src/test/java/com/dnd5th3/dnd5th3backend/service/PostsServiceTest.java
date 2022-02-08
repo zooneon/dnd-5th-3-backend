@@ -65,9 +65,9 @@ class PostsServiceTest {
                 .build();
     }
 
-    @DisplayName("post 저장 테스트")
+    @DisplayName("게시물 저장 테스트")
     @Test
-    void savePostTest() throws Exception{
+    void savePost() throws Exception{
         //given
         MockMultipartFile file = new MockMultipartFile("test file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
         PostRequestDto postRequestDto = new PostRequestDto("test", "test content", file);
@@ -81,15 +81,15 @@ class PostsServiceTest {
         assertEquals(responseDto.getId(), post.getId());
     }
 
-    @DisplayName("post 상세조회 테스트")
+    @DisplayName("게시물 상세조회 테스트")
     @Test
-    void getPostTest() {
+    void getDetailPost() {
         //given
         given(postsRepository.findPostsById(1L)).willReturn(post);
         given(voteService.getVoteType(member, post)).willReturn(VoteType.NO_RESULT);
 
         //when
-        PostResponseDto responseDto = postsService.getPost(1L, member);
+        PostResponseDto responseDto = postsService.getDetailPost(1L, member);
 
         //then
         assertEquals(responseDto.getId(), post.getId());
@@ -99,9 +99,9 @@ class PostsServiceTest {
         assertEquals(false, post.getIsPostsEnd());
     }
 
-    @DisplayName("post 수정 테스트")
+    @DisplayName("게시물 수정 테스트")
     @Test
-    void updatePostTest() throws Exception {
+    void updatePost() throws Exception {
         //given
         MockMultipartFile file = new MockMultipartFile("test file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
         PostRequestDto requestDto = new PostRequestDto("test", "test content", file);
@@ -115,9 +115,9 @@ class PostsServiceTest {
         assertEquals(responseDto.getId(), post.getId());
     }
 
-    @DisplayName("post 삭제 테스트")
+    @DisplayName("게시물 삭제 테스트")
     @Test
-    void deletePostTest() throws Exception {
+    void deletePost() {
         //given
         given(postsRepository.findPostsById(1L)).willReturn(post);
 
@@ -131,14 +131,14 @@ class PostsServiceTest {
 
     @DisplayName("정렬된 전체 게시물 조회 테스트")
     @Test
-    void findAllPostsWithSortType() throws Exception {
+    void getPostListWithSortType() {
         //given
         List<Posts> postsList = new ArrayList<>();
         postsList.add(post);
         given(postsRepository.findPostsWithSortType(SortType.RANK_COUNT.getValue())).willReturn(postsList);
 
         //when
-        AllPostResponseDto responseDto = postsService.findAllPostsWithSortType(SortType.RANK_COUNT.getValue());
+        AllPostResponseDto responseDto = postsService.getPostListWithSortType(SortType.RANK_COUNT.getValue());
 
         //then
         assertEquals(responseDto.getListDtos().get(0).getId(), post.getId());

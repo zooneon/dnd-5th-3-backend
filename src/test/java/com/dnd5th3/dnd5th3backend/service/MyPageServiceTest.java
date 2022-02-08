@@ -27,9 +27,6 @@ class MyPageServiceTest {
     @Mock
     private PostsRepository postsRepository;
 
-    @Mock
-    private VoteRepository voteRepository;
-
     @InjectMocks
     private MyPageService myPageService;
 
@@ -45,14 +42,14 @@ class MyPageServiceTest {
         postsList.add(0, posts);
     }
 
-    @DisplayName("사용자 이름, 이메일, 정렬된 게시글들을 보여준다.")
+    @DisplayName("마이페이지 정보 조회 테스트")
     @Test
-    void findMemberInfoWithSortTypeTest() {
+    void getMemberInfoWithSortType() {
         //given
         given(postsRepository.findPostsByMemberOrderByCreatedDate(member)).willReturn(postsList);
 
         //when
-        InfoResponseDto responseDto = myPageService.findMemberInfoWithSortType(member, SortType.WRITTEN.getValue());
+        InfoResponseDto responseDto = myPageService.getMemberInfoWithSortType(member, SortType.WRITTEN.getValue());
 
         //then
         assertThat("name").isEqualTo(responseDto.getName());

@@ -92,9 +92,9 @@ class PostsControllerTest {
         testDate = LocalDateTime.of(2022, 2, 7, 12, 0, 0);
     }
 
-    @DisplayName("post 생성 api 테스트")
+    @DisplayName("게시물 등록 API 테스트")
     @Test
-    void savePostApiTest() throws Exception {
+    void saveAPI() throws Exception {
         //given
         MockMultipartFile file = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
         PostRequestDto requestDto = new PostRequestDto("test", "content", file);
@@ -117,7 +117,7 @@ class PostsControllerTest {
                 .andExpect(status().isCreated());
     }
 
-    @DisplayName("post 상세조회 api 테스트")
+    @DisplayName("게시물 상세조회 API 테스트")
     @Test
      void getPostApiTest() throws Exception {
         //given
@@ -127,7 +127,7 @@ class PostsControllerTest {
                 .isVoted(false).permitCount(0).rejectCount(0)
                 .createdDate(testDate).voteDeadline(testDate.plusDays(1L))
                 .currentMemberVoteType(VoteType.NO_RESULT).build();
-        given(postsService.getPost(1L, member)).willReturn(responseDto);
+        given(postsService.getDetailPost(1L, member)).willReturn(responseDto);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/{id}", 1L)
@@ -143,9 +143,9 @@ class PostsControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("post 수정 api 테스트")
+    @DisplayName("게시물 수정 API 테스트")
     @Test
-    void updatePostApiTest() throws Exception {
+    void updateAPI() throws Exception {
         //given
         MockMultipartFile file = new MockMultipartFile("file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test.jpg".getBytes(StandardCharsets.UTF_8));
         PostRequestDto requestDto = new PostRequestDto("test", "content", file);
@@ -168,9 +168,9 @@ class PostsControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("post 삭제 api 테스트")
+    @DisplayName("게시물 삭제 API 테스트")
     @Test
-    void deletePostApiTest() throws Exception {
+    void deleteAPI() throws Exception {
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.delete("/api/v1/posts/{id}", 1L)
                 .principal(new UsernamePasswordAuthenticationToken(member, null))
@@ -183,9 +183,9 @@ class PostsControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("전체 게시물 조회 api 테스트")
+    @DisplayName("게시물 조회 API 테스트")
     @Test
-    void findPostsListApiTest() throws Exception {
+    void getListAPI() throws Exception {
         //given
         List<PostsListDto> listDtos = new ArrayList<>();
         PostsListDto dto1 = PostsListDto.builder()
@@ -214,7 +214,7 @@ class PostsControllerTest {
         listDtos.add(dto1);
         AllPostResponseDto responseDto = AllPostResponseDto.builder().listDtos(listDtos).build();
 
-        given(postsService.findAllPostsWithSortType(SortType.CREATED_DATE.getValue())).willReturn(responseDto);
+        given(postsService.getPostListWithSortType(SortType.CREATED_DATE.getValue())).willReturn(responseDto);
 
         //when
         ResultActions rankCountResult = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts?sorted=rank-count"));
@@ -293,9 +293,9 @@ class PostsControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("투표 생성 api 테스트")
+    @DisplayName("투표 등록 API 테스트")
     @Test
-    void votePostApiTest() throws Exception {
+    void saveVoteAPI() throws Exception {
         //given
         VoteRequestDto requestDto = new VoteRequestDto(VoteType.PERMIT);
         Posts posts = Posts.builder()
@@ -347,9 +347,9 @@ class PostsControllerTest {
                 .andExpect(jsonPath("$.id").value(1L));
     }
 
-    @DisplayName("메인페이지 post 조회 api 테스트")
+    @DisplayName("메인페이지 게시물 조회 API 테스트")
     @Test
-    void mainPageApiTest() throws Exception {
+    void getMainPostsAPI() throws Exception {
         //given
         Posts hotPost = Posts.builder()
                 .id(1L)
@@ -433,7 +433,7 @@ class PostsControllerTest {
         mainPostsMap.put("bestResponsePost", bestResponsePost);
         mainPostsMap.put("neckAndNeckPost", neckAndNeckPost);
 
-        given(postsService.findMainPosts()).willReturn(mainPostsMap);
+        given(postsService.getMainPosts()).willReturn(mainPostsMap);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/main"));

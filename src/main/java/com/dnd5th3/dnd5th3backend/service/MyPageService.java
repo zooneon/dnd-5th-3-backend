@@ -25,7 +25,7 @@ public class MyPageService {
     private final PostsRepository postsRepository;
     private final VoteRepository voteRepository;
 
-    public InfoResponseDto findMemberInfoWithSortType(Member member, String sorted) {
+    public InfoResponseDto getMemberInfoWithSortType(Member member, String sorted) {
         List<PostsListDto> postsList = new ArrayList<>();
         /**
          * 내가 쓴 글

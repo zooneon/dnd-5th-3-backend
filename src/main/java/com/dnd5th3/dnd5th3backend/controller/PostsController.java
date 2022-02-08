@@ -27,8 +27,6 @@ import java.util.Map;
 public class PostsController {
 
     private final PostsService postsService;
-    private final VoteService voteService;
-    private final S3Uploader s3Uploader;
 
     @PostMapping
     public ResponseEntity<IdResponseDto> savePost(PostRequestDto requestDto, @AuthenticationPrincipal Member member) throws IOException {
@@ -53,15 +51,14 @@ public class PostsController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<IdResponseDto> deletePost(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member) {
-        postsService.deletePost(id, member);
-        IdResponseDto responseDto = IdResponseDto.builder().id(id).build();
+        IdResponseDto responseDto = postsService.deletePost(id, member);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping
     public ResponseEntity<AllPostResponseDto> findAllPosts(@RequestParam(name = "sorted") String sortType) {
         AllPostResponseDto responseDto = postsService.findAllPostsWithSortType(sortType);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
 //    @PostMapping("/{id}/vote")

@@ -68,12 +68,14 @@ public class PostsService {
         return IdResponseDto.builder().id(foundPost.getId()).build();
     }
 
-    public void deletePost(Long id, Member member) {
+    public IdResponseDto deletePost(Long id, Member member) {
         Posts foundPost = postsRepository.findPostsById(id);
         if (foundPost.getMember().getId() != member.getId()) {
             throw new NoAuthorizationException("삭제 권한 없음");
         }
         postsRepository.delete(foundPost);
+
+        return IdResponseDto.builder().id(foundPost.getId()).build();
     }
 
     public AllPostResponseDto findAllPostsWithSortType(String sortType) {

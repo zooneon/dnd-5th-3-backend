@@ -119,13 +119,14 @@ class PostsServiceTest {
     @Test
     void deletePostTest() throws Exception {
         //given
-        when(postsRepository.findPostsById(1L)).thenReturn(post);
+        given(postsRepository.findPostsById(1L)).willReturn(post);
 
         //when
-        postsService.deletePost(post.getId(), member);
+        IdResponseDto responseDto = postsService.deletePost(post.getId(), member);
 
         //then
         verify(postsRepository, times(1)).delete(eq(post));
+        assertEquals(responseDto.getId(), post.getId());
     }
 
     @DisplayName("정렬된 전체 게시물 조회 테스트")

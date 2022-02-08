@@ -45,7 +45,6 @@ import java.util.Map;
 import static com.dnd5th3.dnd5th3backend.utils.ApiDocumentUtils.getDocumentRequest;
 import static com.dnd5th3.dnd5th3backend.utils.ApiDocumentUtils.getDocumentResponse;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -53,7 +52,6 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,8 +72,6 @@ class PostsControllerTest {
     private PostsService postsService;
     @MockBean
     private VoteService voteService;
-    @MockBean
-    private S3Uploader s3Uploader;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -136,6 +132,7 @@ class PostsControllerTest {
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.get("/api/v1/posts/{id}", 1L)
                 .principal(new UsernamePasswordAuthenticationToken(member,null))
+                .header("Authorization", "Bearer Token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(Charsets.UTF_8.toString()));
@@ -143,38 +140,7 @@ class PostsControllerTest {
         //then
         result
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andDo(document("posts/getById",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        pathParameters(
-                                parameterWithName("id").description("게시글 id")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("게시글 id"),
-                                fieldWithPath("name").description("작성자 이름"),
-                                fieldWithPath("title").description("글 제목"),
-                                fieldWithPath("content").description("글 내용"),
-                                fieldWithPath("productImageUrl").description("상품 이미지"),
-                                fieldWithPath("isVoted").description("투표 종료 여부"),
-                                fieldWithPath("permitCount").description("찬성 투표 수"),
-                                fieldWithPath("rejectCount").description("반대 투표 수"),
-                                fieldWithPath("createdDate").description("작성된 시간"),
-                                fieldWithPath("voteDeadline").description("투표 종료 시간"),
-                                fieldWithPath("currentMemberVoteType").description("현재 사용자의 투표 결과")
-                        )
-                ))
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("name"))
-                .andExpect(jsonPath("$.title").value("test"))
-                .andExpect(jsonPath("$.content").value("test content"))
-                .andExpect(jsonPath("$.productImageUrl").value("test.jpg"))
-                .andExpect(jsonPath("$.isVoted").value(false))
-                .andExpect(jsonPath("$.permitCount").value(0))
-                .andExpect(jsonPath("$.rejectCount").value(0))
-                .andExpect(jsonPath("$.createdDate").value("2022-02-07T12:00:00"))
-                .andExpect(jsonPath("$.voteDeadline").value("2022-02-08T12:00:00"))
-                .andExpect(jsonPath("$.currentMemberVoteType").value("NO_RESULT"));
+                .andExpect(status().isOk());
     }
 
     @DisplayName("post 수정 api 테스트")
@@ -192,6 +158,7 @@ class PostsControllerTest {
                 .part(new MockPart("title", "update".getBytes(StandardCharsets.UTF_8)))
                 .part(new MockPart("content", "update content".getBytes(StandardCharsets.UTF_8)))
                 .principal(new UsernamePasswordAuthenticationToken(member, null))
+                .header("Authorization", "Bearer Token")
                 .contentType(MediaType.MULTIPART_MIXED)
         );
 
@@ -213,20 +180,7 @@ class PostsControllerTest {
         //then
         result
                 .andDo(print())
-                .andDo(document("posts/delete",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        pathParameters(
-                                parameterWithName("id").description("게시글 id")
-                        ),
-                        requestHeaders(
-                                headerWithName("Authorization").description("현재 사용자 토큰")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("삭제된 게시글 id").type(Long.class)
-                        )
-                ))
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk());
     }
 
     @DisplayName("전체 게시물 조회 api 테스트")

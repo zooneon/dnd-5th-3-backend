@@ -298,21 +298,6 @@ class PostsControllerTest {
     void saveVoteAPI() throws Exception {
         //given
         VoteRequestDto requestDto = new VoteRequestDto(VoteType.PERMIT);
-        Posts posts = Posts.builder()
-                .id(1L)
-                .member(member)
-                .title("test")
-                .content("test content")
-                .productImageUrl("test.jpg")
-                .build();
-        Vote response = Vote.builder()
-                .id(1L)
-                .member(member)
-                .posts(posts)
-                .result(VoteType.PERMIT)
-                .build();
-//        given(postsService.findPostById(1L)).willReturn(posts);
-        given(voteService.saveVote(member, posts, requestDto.getResult())).willReturn(response);
 
         //when
         ResultActions result = mvc.perform(RestDocumentationRequestBuilders.post("/api/v1/posts/{id}/vote", 1L)
@@ -327,24 +312,7 @@ class PostsControllerTest {
         //then
         result
                 .andDo(print())
-                .andDo(document("posts/vote",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        pathParameters(
-                                parameterWithName("id").description("투표할 게시글 id")
-                        ),
-                        requestHeaders(
-                                headerWithName("Authorization").description("현재 사용자 토큰")
-                        ),
-                        requestFields(
-                                fieldWithPath("result").description("PERMIT(찬성), REJECT(반대)")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("투표한 게시글 id")
-                        )
-                ))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isCreated());
     }
 
     @DisplayName("메인페이지 게시물 조회 API 테스트")

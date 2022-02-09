@@ -143,4 +143,18 @@ class PostsServiceTest {
         //then
         assertEquals(responseDto.getListDtos().get(0).getId(), post.getId());
     }
+
+    @DisplayName("게시물 투표 등록 테스트")
+    @Test
+    void saveVote() {
+        //given
+        VoteRequestDto requestDto = new VoteRequestDto(VoteType.PERMIT);
+        given(postsRepository.findPostsById(1L)).willReturn(post);
+
+        //when
+        IdResponseDto responseDto = postsService.saveVote(1L, requestDto, member);
+
+        //then
+        assertEquals(responseDto.getId(), post.getId());
+    }
 }

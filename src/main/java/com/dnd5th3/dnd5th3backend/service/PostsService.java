@@ -85,6 +85,12 @@ public class PostsService {
         return AllPostResponseDto.builder().listDtos(listDtos).build();
     }
 
+    public IdResponseDto saveVote(Long id, VoteRequestDto requestDto, Member member) {
+        Posts foundPost = postsRepository.findPostsById(id);
+        voteService.saveVote(member, foundPost, requestDto.getResult());
+        return IdResponseDto.builder().id(foundPost.getId()).build();
+    }
+
     public Map<String, Posts> getMainPosts() {
         Map<String, Posts> resultMap = new HashMap<>();
         //상위 50개 컨텐츠 추출

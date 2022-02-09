@@ -61,14 +61,14 @@ public class PostsController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-//    @PostMapping("/{id}/vote")
-//    public ResponseEntity<IdResponseDto> saveVoteAPI(@PathVariable(name = "id") Long id, @AuthenticationPrincipal Member member, @RequestBody VoteRequestDto requestDto) {
-//        Posts posts = postsService.findPostById(id);
-//        voteService.saveVote(member, posts, requestDto.getResult());
-//        IdResponseDto responseDto = IdResponseDto.builder().id(posts.getId()).build();
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
-//    }
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<IdResponseDto> saveVoteAPI(@PathVariable(name = "id") Long id,
+                                                     @RequestBody VoteRequestDto requestDto,
+                                                     @AuthenticationPrincipal Member member
+                                        ) {
+        IdResponseDto responseDto = postsService.saveVote(id, requestDto, member);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
 
     @GetMapping("/main")
     public ResponseEntity<AllResponseDto> getMainPostsAPI() {
